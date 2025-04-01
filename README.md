@@ -1,0 +1,109 @@
+# UJAN-SARKAR
+Display Temperature on LCD using Arduino and Temperature Sensor
+This project will show you how to build a system that reads temperature from a sensor and displays it on an LCD screen in real-time.
+
+Components Needed
+Arduino board (Uno, Nano, etc.)
+
+Temperature sensor (DHT11 or LM35 - I'll provide code for both)
+
+LCD screen (16x2 character LCD with I2C interface recommended)
+
+Breadboard and jumper wires
+
+10kΩ resistor (for DHT11)
+
+Potentiometer (if using non-I2C LCD)
+
+Circuit Connections
+For DHT11 Sensor:
+Connect DHT11 VCC to Arduino 5V
+
+Connect DHT11 GND to Arduino GND
+
+Connect DHT11 DATA to Arduino digital pin 2 (with 10kΩ pull-up resistor to VCC)
+
+For LM35 Sensor:
+Connect LM35 VCC to Arduino 5V
+
+Connect LM35 GND to Arduino GND
+
+Connect LM35 OUT to Arduino analog pin A0
+
+For I2C LCD:
+Connect LCD GND to Arduino GND
+
+Connect LCD VCC to Arduino 5V
+
+Connect LCD SDA to Arduino A4 (or SDA)
+
+Connect LCD SCL to Arduino A5 (or SCL)
+
+Arduino Code
+Option 1: Using DHT11 Sensor
+#include <DHT.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+#define DHTPIN 2
+#define DHTTYPE DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+LiquidCrystal_I2C lcd(0x27, 16, 2); // Change address if needed
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+  lcd.init();
+  lcd.backlight();
+  lcd.print("Temperature:");
+}
+
+void loop() {
+  delay(2000); // Wait between measurements
+  
+  float temp = dht.readTemperature(); // Read temperature in Celsius
+  
+  if (isnan(temp)) {
+    lcd.setCursor(0, 1);
+    lcd.print("Error reading!");
+    return;
+  }
+  
+  lcd.setCursor(0, 1);
+  lcd.print(temp);
+  lcd.print(" C");
+  
+  Serial.print("Temperature: ");
+  Serial.print(temp);
+  Serial.println(" °C");
+}
+Option 2: Using LM35 Sensor
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); // Change address if needed
+
+void setup() {
+  Serial.begin(9600);
+  lcd.init();
+  lcd.backlight();
+  lcd.print("Temperature:");
+}
+
+void loop() {
+  int sensorValue = analogRead(A0);
+  float voltage = sensorValue * (5.0 / 1023.0);
+  float temp = voltage * 100; // Convert to Celsius (LM35 outputs 10mV per degree)
+  
+  lcd.setCursor(0, 1);
+  lcd.print(temp);
+  lcd.print(" C");
+  
+  Serial.print("Temperature: ");
+  Serial.print(temp);
+  Serial.println(" °C");
+  
+  delay(1000); // Update every second
+}
+
